@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeCoffee – Speise- & Getränkekarte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:   #FFFFFF;
+    --pill:    #FAEEE4;
+    --ink:     #40291B;
+    --body:    #7A5139;
+    --green:   #48B253;
+    --line:    rgba(64,41,27,.14);
+    --shadow:  0 18px 40px -20px rgba(64,41,27,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:#EFE6DA;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  img{max-width:100%; display:block;}
+
+  /* ---------- Sticky nav ---------- */
+  .tabs{
+    position:sticky; top:0; z-index:30;
+    display:flex; gap:8px;
+    background:#EFE6DA;
+    padding:12px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .tabs a{
+    flex:1; text-align:center;
+    text-decoration:none;
+    font-weight:700; font-size:.82rem;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink);
+    background:var(--white);
+    border:1.5px solid var(--line);
+    border-radius:999px;
+    padding:9px 6px;
+    transition:all .2s ease;
+  }
+  .tabs a.active{ background:var(--ink); border-color:var(--ink); color:var(--pill); }
+
+  /* ---------- "Page" wrapper mimicking the A4 sheet ---------- */
+  .page{
+    max-width:900px;
+    margin:18px auto;
+    background:var(--white);
+    box-shadow:var(--shadow);
+    padding:28px 20px 10px;
+    scroll-margin-top:64px;
+  }
+  @media(min-width:560px){
+    .page{ margin:26px auto; padding:40px 40px 20px; border-radius:14px; }
+  }
+
+  .page-head{ margin-bottom:20px; position:relative; }
+  .page-head h1{
+    font-family:'Poppins', sans-serif;
+    font-weight:900;
+    font-size:clamp(2.4rem, 11vw, 3.6rem);
+    letter-spacing:-.01em;
+    margin:0;
+    line-height:.95;
+  }
+  .page-head p{
+    margin:6px 0 0;
+    font-size:.68rem;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--body);
+  }
+  .logo{
+    position:absolute; top:0; right:0;
+    width:132px;
+  }
+  @media(min-width:560px){ .logo{ width:170px; } }
+
+  /* ---------- two-column layout like the print sheet (collapses on mobile) ---------- */
+  .columns{
+    display:flex;
+    flex-direction:column;
+    gap:0 44px;
+  }
+  @media(min-width:700px){
+    .columns{ flex-direction:row; }
+    .columns > .col{ flex:1 1 0; min-width:0; }
+  }
+  .col > section:first-child{ margin-top:0; }
+
+  section{ margin-top:26px; }
+
+  .section-title{
+    display:inline-block;
+    font-weight:700;
+    font-size:.85rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    background:var(--pill);
+    color:var(--ink);
+    padding:9px 22px;
+    border-radius:999px;
+    margin:0 0 14px;
+  }
+
+  .vegan-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--green);
+    border:1.4px solid var(--green);
+    border-radius:999px;
+    padding:7px 16px;
+    margin:-4px 0 16px;
+  }
+
+  /* ---------- photo item grid (Signature / Refreshers / Smoothies) ---------- */
+  .photo-grid{
+    display:flex;
+    align-items:stretch;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .photo-item{
+    flex:1 1 0; min-width:0;
+    display:flex; flex-direction:column;
+  }
+  .photo-item img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    margin-bottom:8px;
+  }
+  .photo-item .item-row{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:4px;
+  }
+  .photo-item .item-name{
+    font-weight:700; font-size:.72rem; line-height:1.15;
+    text-transform:uppercase; margin:0;
+  }
+  .photo-item .price{
+    font-weight:700; font-size:.7rem; color:var(--ink);
+    white-space:nowrap; flex-shrink:0;
+  }
+  .photo-item .item-desc{
+    font-size:.62rem; line-height:1.35; color:var(--body);
+    margin:5px 0 0; font-weight:400;
+  }
+
+  /* ---------- simple list rows (Hot / Iced / Soft / Tea / Food) ---------- */
+  .list-row{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .list-row:last-child{ border-bottom:none; }
+  .list-row .item-name{
+    font-weight:700; font-size:.86rem;
+    text-transform:uppercase; margin:0;
+  }
+  .list-row .item-desc{
+    font-size:.76rem; color:var(--body); margin:5px 0 0; line-height:1.4; font-weight:400;
+  }
+  .list-row .price{
+    font-weight:700; font-size:.86rem; color:var(--ink);
+    white-space:nowrap; flex-shrink:0; margin-top:1px;
+  }
+
+  /* ---------- extras / footer box ---------- */
+  .extras-box{
+    background:var(--pill);
+    border-radius:14px;
+    padding:18px 18px 14px;
+    margin:22px 0 18px;
+  }
+  .extras-box .extras-cols{
+    display:flex; gap:32px;
+  }
+  .extras-box .extras-col{ flex:1 1 0; min-width:0; }
+  .extras-box h4{
+    margin:0 0 8px;
+    font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    min-height:1.1em;
+  }
+  .chip-row{
+    display:flex; justify-content:space-between; gap:8px;
+    font-size:.78rem; padding:3px 0;
+  }
+  .chip-row span:last-child{ font-weight:700; white-space:nowrap; }
+
+  .allergen{
+    display:block;
+    text-align:center;
+    border:1.4px solid var(--green);
+    border-radius:999px;
+    padding:9px 14px;
+    margin:0 0 24px;
+    font-size:.72rem;
+  }
+  .allergen b{ color:var(--ink); }
+  .allergen span{ color:var(--green); font-weight:600; }
+
+  .page-foot-space{ height:8px; }
+</style>
+</head>
+<body>
+
+<nav class="tabs">
+  <a href="#drinks" class="tab-link active" data-target="drinks">Drinks</a>
+  <a href="#food" class="tab-link" data-target="food">Food</a>
+</nav>
+
+<!-- ============ PAGE 1 – DRINKS ============ -->
+<div class="page" id="drinks">
+  <div class="page-head">
+    <h1>DRINKS</h1>
+    <!--<p>Made with love, served with style.</p>-->
+    <img class="logo" src="assets/logo.png" alt="LeCoffee Logo">
+  </div>
+
+  <div class="columns">
+    <div class="col">
+
+      <section>
+        <span class="section-title">Signature</span>
+        <div class="photo-grid">
+          <div class="photo-item">
+            <img src="assets/sig_iced_ube_matcha.png" alt="Iced Ube Matcha">
+            <div class="item-row"><p class="item-name">Iced Ube Matcha</p><span class="price">7,90 €</span></div>
+            <p class="item-desc">Creamy matcha with sweet ube, served iced</p>
+          </div>
+          <div class="photo-item">
+            <img src="assets/sig_ube_coconut_water.png" alt="Ube Coconut Water">
+            <div class="item-row"><p class="item-name">Ube Coconut Water</p><span class="price">6,90 €</span></div>
+            <p class="item-desc">Refreshing coconut water with ube &amp; lime</p>
+          </div>
+          <div class="photo-item">
+            <img src="assets/sig_iced_spanish_matcha.png" alt="Iced Spanish Matcha Banana Pudding">
+            <div class="item-row"><p class="item-name">Iced Spanish Matcha Banana Pudding</p><span class="price">8,90 €</span></div>
+            <p class="item-desc">Matcha, banana</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-title">Refreshers</span>
+        <div class="vegan-badge">🌱 Vegan Options Available</div>
+        <div class="photo-grid">
+          <div class="photo-item">
+            <img src="assets/ref_yuzu_lemon.png" alt="Yuzu Lemon">
+            <div class="item-row"><p class="item-name">Yuzu Lemon</p><span class="price">5,50 €</span></div>
+            <p class="item-desc">Yuzu, lemon &amp; agave</p>
+          </div>
+          <div class="photo-item">
+            <img src="assets/ref_passion_fruit.png" alt="Passion Fruit">
+            <div class="item-row"><p class="item-name">Passion Fruit</p><span class="price">5,50 €</span></div>
+            <p class="item-desc">Passionfruit, lime &amp; water</p>
+          </div>
+          <div class="photo-item">
+            <img src="assets/ref_iced_peach_jasmine.png" alt="Iced Peach Jasmine Tea">
+            <div class="item-row"><p class="item-name">Iced Peach Jasmine Tea</p><span class="price">5,50 €</span></div>
+            <p class="item-desc">Jasmine tea with peach</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-title">Smoothies</span>
+        <div class="photo-grid">
+          <div class="photo-item">
+            <img src="assets/smo_strawberry_white_choc.png" alt="Strawberry White Chocolate">
+            <div class="item-row"><p class="item-name">Strawberry White Chocolate</p><span class="price">7,90 €</span></div>
+            <p class="item-desc">Strawberry, white chocolate &amp; almond milk</p>
+          </div>
+          <div class="photo-item">
+            <img src="assets/smo_golden_mango.png" alt="Golden Mango">
+            <div class="item-row"><p class="item-name">Golden Mango</p><span class="price">7,90 €</span></div>
+            <p class="item-desc">Mango, passionfruit, &amp; orange, honey</p>
+          </div>
+          <div class="photo-item">
+            <img src="assets/smo_creamy_peachy.png" alt="Creamy Peachy">
+            <div class="item-row"><p class="item-name">Creamy Peachy</p><span class="price">7,90 €</span></div>
+            <p class="item-desc">Peach, banana &amp; yogurt - smooth &amp; creamy</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="extras-box">
+        <div class="extras-cols">
+          <div class="extras-col">
+            <h4>Extras</h4>
+            <div class="chip-row"><span>Vanilla Sirup</span><span>0,30 €</span></div>
+            <div class="chip-row"><span>Caramel Sirup</span><span>0,30 €</span></div>
+            <div class="chip-row"><span>Hazelnut Sirup</span><span>0,30 €</span></div>
+            <div class="chip-row"><span>Agavendicksaft</span><span>0,30 €</span></div>
+          </div>
+          <div class="extras-col">
+            <h4>Milchalternativen</h4>
+            <div class="chip-row"><span>Kokosdrink</span><span>0,50 €</span></div>
+            <div class="chip-row"><span>Mandeldrink</span><span>0,50 €</span></div>
+            <div class="chip-row"><span>Haferdrink</span><span>0,50 €</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col">
+
+      <section>
+        <span class="section-title">Hot</span>
+        <div class="list">
+          <div class="list-row"><p class="item-name">Espresso</p><span class="price">2,80 €</span></div>
+          <div class="list-row"><p class="item-name">Espresso Doppio</p><span class="price">3,80 €</span></div>
+          <div class="list-row"><p class="item-name">Americano</p><span class="price">3,80 €</span></div>
+          <div class="list-row"><p class="item-name">Flat White</p><span class="price">4,80 €</span></div>
+          <div class="list-row"><p class="item-name">Cappuccino</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Café Latte</p><span class="price">4,80 €</span></div>
+          <div class="list-row"><p class="item-name">Matcha Latte</p><span class="price">5,50 €</span></div>
+          <div class="list-row"><p class="item-name">Chai Latte</p><span class="price">5,90 €</span></div>
+          <div class="list-row"><p class="item-name">Hot Chocolate</p><span class="price">4,90 €</span></div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-title">Iced</span>
+        <div class="list">
+          <div class="list-row"><p class="item-name">Iced Latte</p><span class="price">5,00 €</span></div>
+          <div class="list-row"><p class="item-name">Iced Spanish Latte</p><span class="price">5,50 €</span></div>
+          <div class="list-row"><p class="item-name">Iced Americano</p><span class="price">5,00 €</span></div>
+          <div class="list-row"><p class="item-name">Iced Matcha Latte</p><span class="price">6,00 €</span></div>
+          <div class="list-row"><p class="item-name">Iced Strawberry Matcha</p><span class="price">6,50 €</span></div>
+          <div class="list-row"><p class="item-name">Iced Mango Matcha</p><span class="price">6,50 €</span></div>
+          <div class="list-row"><p class="item-name">Caramel Frappé</p><span class="price">6,50 €</span></div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-title">Soft Drinks</span>
+        <div class="list">
+          <div class="list-row"><p class="item-name">Fritz Kola</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Fritz Kola Superzero</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Apple Spritz</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Orange Juice</p><span class="price">4,90 €</span></div>
+          <div class="list-row"><p class="item-name">Still Water</p><span class="price">3,50 €</span></div>
+          <div class="list-row"><p class="item-name">Sparkling Water</p><span class="price">3,50 €</span></div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-title">Tea</span>
+        <div class="list">
+          <div class="list-row"><p class="item-name">English Breakfast</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Earl Grey</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Jasmine Green</p><span class="price">4,20 €</span></div>
+          <div class="list-row"><p class="item-name">Rooibos Vanilla</p><span class="price">4,20 €</span></div>
+        </div>
+      </section>
+
+      <div class="page-foot-space"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAGE 2 – FOOD ============ -->
+<div class="page" id="food">
+  <div class="page-head">
+    <h1>FOOD</h1>
+    <!--<p>Made with love, served with style.</p>-->
+    <img class="logo" src="assets/logo.png" alt="LeCoffee Logo">
+  </div>
+
+  <div class="columns">
+    <div class="col">
+
+      <section>
+        <span class="section-title">Sandwiches &amp; Bagels</span>
+        <div class="list">
+          <div class="list-row">
+            <div><p class="item-name">Club Sandwich</p><p class="item-desc">»LeCoffee Klassiker«, Hähnchenbrust, Putenbacon, Käse, Salat, Tomate, Gurke, Club Sauce.</p></div>
+            <span class="price">12,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Truffle Egg Drop</p><p class="item-desc">Trüffelcreme, Rührei, Käse, Röstzwiebel, Brioche</p></div>
+            <span class="price">11,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Bacon Chesse Egg Drop</p><p class="item-desc">Putenbacon, Rührei, Käse, Kewpie-Mayo, Brioche</p></div>
+            <span class="price">13,00 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Pastrami Bagel</p><p class="item-desc">American Pastrami, Käse, Gewürzgurke, Tomate, Bagelsauce</p></div>
+            <span class="price">12,00 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Lachs Bagel</p><p class="item-desc">Lachs, Kräuterquark, Rote Zwiebel, Blattspinat, Tomate</p></div>
+            <span class="price">11,00 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Signature Bagel</p><p class="item-desc">Putenbacon, Trüffelcreme, Röstzwiebel, Tomaten, Oliven, Rucola, Parmesan</p></div>
+            <span class="price">10,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Sucuk Bagel</p><p class="item-desc">Sucuk, Rührei, Käse, Tomaten, Gurke, Bagelsauce</p></div>
+            <span class="price">11,00 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Smashed Avocado Sandwich</p><p class="item-desc">Smashed Avocado, Tomaten, Limette, LeCoffee Sauce, Sauerteigbrot</p></div>
+            <span class="price">12,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Burrata Pesto Sandwich</p><p class="item-desc">Sauerteigbrot, Burrata, Pesto, geröstete Cashew, Cherrytomaten, Hot Honey Sauce</p></div>
+            <span class="price">13,50 €</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="extras-box">
+        <div class="extras-cols">
+          <div class="extras-col">
+            <h4>Extras</h4>
+            <div class="chip-row"><span>Bacon</span><span>3,00 €</span></div>
+            <div class="chip-row"><span>Sucuk</span><span>3,00 €</span></div>
+            <div class="chip-row"><span>Pastrami</span><span>4,00 €</span></div>
+            <div class="chip-row"><span>Scheibenkäse</span><span>1,00 €</span></div>
+          </div>
+          <div class="extras-col">
+            <h4>&nbsp;</h4>
+            <div class="chip-row"><span>Avocado</span><span>2,50 €</span></div>
+            <div class="chip-row"><span>Extra Ei</span><span>1,50 €</span></div>
+            <div class="chip-row"><span>Extra Dip/Sauce</span><span>1,50 €</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="allergen"><span>Fragen zu Allergenen? Bitte fragt unser Team.</span></p>
+    </div>
+
+    <div class="col">
+
+      <section>
+        <span class="section-title">Brekkie</span>
+        <div class="list">
+          <div class="list-row">
+            <div><p class="item-name">American Brekkie</p><p class="item-desc">Sauerteigbrot, Pancake, Putenbacon, Smashed Avocado, Butter &amp; Ahornsirup</p></div>
+            <span class="price">15,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Turkish Brekkie</p><p class="item-desc">Sauerteigbrot, Simit, Sucuk, Tomate Gurke Mix, Feta, Oliven, Cream &amp; Honig</p></div>
+            <span class="price">15,50 €</span>
+          </div>
+        </div>
+      </section>
+
+      <!--<section>
+        <span class="section-title">Bowls &amp; Salads</span>
+        <div class="list">
+          <div class="list-row">
+            <div><p class="item-name">Chicken Mango Bowl (Low Carb)</p><p class="item-desc">Hähnchenbrust, Mango, Smashed Avocado, eingelegte Rote Beete, Salatmix, Siracha (scharf), Honey Mustard Sauce</p></div>
+            <span class="price">12,90 €</span>
+          </div>
+          <div class="list-row">
+            <p class="item-name">High Protein Chicken Salad</p>
+            <span class="price">13,50 €</span>
+          </div>
+        </div>
+      </section>-->
+
+      <section>
+        <span class="section-title">Sweets</span>
+        <div class="list">
+          <div class="list-row">
+            <p class="item-name">Berry French Toast (Sommerkarte)</p>
+            <span class="price">12,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Greek Yoghurt Bowl</p><p class="item-desc">Frische Früchte, LeCoffee Granola, Chiapudding, Erdbeerpüree</p></div>
+            <span class="price">12,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Golden Mango Bowl</p><p class="item-desc">Mango, Agavendicksaft, LeCoffee Granola, Chiapudding, Mangopüree</p></div>
+            <span class="price">12,50 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Chocolate Dream Pancake</p><p class="item-desc">Pancakes, Nougatcreme, Banane, Erdbeere</p></div>
+            <span class="price">10,00 €</span>
+          </div>
+          <div class="list-row">
+            <div><p class="item-name">Brasilian Pancake</p><p class="item-desc">Pancakes, Erdnussmus, Kondensmilch, Banane, Erdbeere</p></div>
+            <span class="price">10,50 €</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="page-foot-space"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const links = document.querySelectorAll('.tab-link');
+  const sections = ['drinks','food'].map(id => document.getElementById(id));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector('.tab-link[data-target="'+entry.target.id+'"]');
+        if(active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
+  sections.forEach(s => s && observer.observe(s));
+</script>
+</body>
+</html>
