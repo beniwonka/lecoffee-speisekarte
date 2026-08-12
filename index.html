@@ -98,7 +98,9 @@
     .columns{ flex-direction:row; }
     .columns > .col{ flex:1 1 0; min-width:0; }
   }
-  .col > section:first-child{ margin-top:0; }
+  @media(min-width:700px){
+    .col > section:first-child{ margin-top:0; }
+  }
 
   section{ margin-top:26px; }
 
@@ -148,6 +150,7 @@
   .photo-item .item-name{
     font-weight:700; font-size:.7rem; line-height:1.15;
     text-transform:uppercase; margin:0;
+    min-height:3.45em; /* reserves space for up to 3 lines so descriptions start level */
   }
   .photo-item .price{
     font-weight:700; font-size:.7rem; color:var(--ink);
